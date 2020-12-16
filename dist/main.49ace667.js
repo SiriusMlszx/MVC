@@ -11208,45 +11208,103 @@ return jQuery;
 },{"process":"od6R"}],"US5u":[function(require,module,exports) {
 "use strict";
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
 require("./app1.css");
 
 var _jquery = _interopRequireDefault(require("jquery"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var $button1 = (0, _jquery.default)("#add1");
-var $button2 = (0, _jquery.default)("#minus1");
-var $button3 = (0, _jquery.default)("#mul2");
-var $button4 = (0, _jquery.default)("#divide2");
-var $number = (0, _jquery.default)("#number");
-var n = localStorage.getItem("n");
-$number.text(n || 100);
-$button1.on('click', function () {
-  var n = parseInt($number.text());
-  n += 1;
-  localStorage.setItem("n", n);
-  $number.text(n);
-});
-$button2.on('click', function () {
-  var n = parseInt($number.text());
-  n -= 1;
-  localStorage.setItem("n", n);
-  $number.text(n);
-});
-$button3.on('click', function () {
-  var n = parseInt($number.text());
-  n *= 2;
-  localStorage.setItem("n", n);
-  $number.text(n);
-});
-$button4.on('click', function () {
-  var n = parseInt($number.text());
-  n /= 2;
-  localStorage.setItem("n", n);
-  $number.text(n);
-});
+var eventBus = (0, _jquery.default)(window); // 数据相关放到m
+
+var m = {
+  // 初始化数据
+  data: {
+    n: parseInt(localStorage.getItem("n"))
+  },
+  create: function create() {},
+  delete: function _delete() {},
+  update: function update(data) {
+    Object.assign(m.data, data);
+    eventBus.trigger('m:updated');
+    localStorage.setItem('n', m.data.n);
+  }
+}; // 视觉相关的放到v
+
+var v = {
+  // 初始化HTML
+  el: null,
+  html: "\n        <div>\n            <div class=\"output\">\n                <span id=\"number\">{{n}}</span>\n            </div>\n            <div class=\"actions\">\n                <button id=\"add1\"> +1 </button>\n                <button id=\"minus1\"> -1 </button>\n                <button id=\"mul2\"> *2 </button>\n                <button id=\"divide2\"> /2 </button>\n            </div>\n        </div>\n",
+  init: function init(container, n) {
+    v.el = (0, _jquery.default)(container);
+  },
+  render: function render(n) {
+    if (v.el.children.length === 0) {} else {
+      v.el.empty();
+    }
+
+    (0, _jquery.default)(v.html.replace('{{n}}', n)).appendTo(v.el);
+  }
+}; // 其他放到c
+
+var c = {
+  // 寻找重要的元素
+  init: function init(container) {
+    v.init(container);
+    v.render(m.data.n);
+    c.autoBindEvents();
+    eventBus.on('m:updated', function () {
+      v.render(m.data.n);
+    });
+  },
+  events: {
+    'click #add1': 'add',
+    'click #minus1': 'minus',
+    'click #mul2': 'mul',
+    'click #divide2': 'div'
+  },
+  add: function add() {
+    m.update({
+      n: m.data.n += 1
+    });
+  },
+  minus: function minus() {
+    m.update({
+      n: m.data.n -= 1
+    });
+  },
+  mul: function mul() {
+    m.update({
+      n: m.data.n *= 2
+    });
+  },
+  div: function div() {
+    m.update({
+      n: m.data.n /= 2
+    });
+  },
+  autoBindEvents: function autoBindEvents() {
+    for (var key in c.events) {
+      var spaceIndex = key.indexOf(' ');
+      var part1 = key.slice(0, spaceIndex);
+      var part2 = key.slice(spaceIndex + 1);
+      v.el.on(part1, part2, c[c.events[key]]);
+    }
+  }
+};
+var _default = c;
+exports.default = _default;
 },{"./app1.css":"AQoi","jquery":"juYr"}],"vZ5o":[function(require,module,exports) {
 "use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
 
 require("./app2.css");
 
@@ -11254,16 +11312,68 @@ var _jquery = _interopRequireDefault(require("jquery"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var $tabBar = (0, _jquery.default)("#app2 .tab-bar");
-var $tabContent = (0, _jquery.default)("#app2 .tab-content");
-$tabBar.on('click', 'li', function (e) {
-  var $li = (0, _jquery.default)(e.currentTarget); // 将自身class设置为选中，将兄弟的选中状态去掉
+var eventBus = (0, _jquery.default)(window);
+var localKey = "app2.index";
+var m = {
+  // 初始化数据
+  data: {
+    index: parseInt(localStorage.getItem(localKey)) || 0
+  },
+  create: function create() {},
+  delete: function _delete() {},
+  update: function update(data) {
+    Object.assign(m.data, data);
+    eventBus.trigger('m:updated');
+    localStorage.setItem('index', m.data.index);
+  },
+  get: function get() {}
+}; // 视觉相关的放到v
 
-  $li.addClass("selected").siblings().removeClass("selected");
-  var index = $li.index();
-  $tabContent.children().eq(index).addClass("active").siblings().removeClass("active");
-});
-$tabBar.children().eq(0).trigger('click');
+var v = {
+  // 初始化HTML
+  el: null,
+  html: function html(index) {
+    return "\n        <div>\n        <ol class=\"tab-bar\">\n            <li class=\"".concat(index === 0 ? 'selected' : '', "\" data-index=\"0\"><span>1111</span></li>\n            <li class=\"").concat(index === 1 ? 'selected' : '', "\"data-index=\"1\"><span>2222</span></li>\n        </ol>\n        <ol class=\"tab-content\">\n            <li class=\"").concat(index === 0 ? 'active' : '', "\">\u5185\u5BB91</li>\n            <li class=\"").concat(index === 1 ? 'active' : '', "\">\u5185\u5BB92</li>\n        </ol>\n        </div>\n");
+  },
+  init: function init(container) {
+    v.el = (0, _jquery.default)(container);
+  },
+  render: function render(index) {
+    if (v.el.children.length !== 0) v.el.empty();
+    (0, _jquery.default)(v.html(index)).appendTo(v.el);
+  }
+}; // 其他放到c
+
+var c = {
+  // 寻找重要的元素
+  init: function init(container) {
+    v.init(container);
+    v.render(m.data.index);
+    c.autoBindEvents();
+    eventBus.on('m:updated', function () {
+      v.render(m.data.index);
+    });
+  },
+  events: {
+    'click .tab-bar li': 'x'
+  },
+  x: function x(e) {
+    var index = parseInt(e.currentTarget.dataset.index);
+    m.update({
+      index: index
+    });
+  },
+  autoBindEvents: function autoBindEvents() {
+    for (var key in c.events) {
+      var spaceIndex = key.indexOf(' ');
+      var part1 = key.slice(0, spaceIndex);
+      var part2 = key.slice(spaceIndex + 1);
+      v.el.on(part1, part2, c[c.events[key]]);
+    }
+  }
+};
+var _default = c;
+exports.default = _default;
 },{"./app2.css":"AQoi","jquery":"juYr"}],"y8lT":[function(require,module,exports) {
 "use strict";
 
@@ -11273,9 +11383,20 @@ require("./app3.css");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+var html = "\n        <section id=\"app3\">\n            <div class=\"square\"></div>\n        </section>\n";
+var $element = (0, _jquery.default)(html).appendTo((0, _jquery.default)('body>.page'));
 var $square = (0, _jquery.default)('#app3 .square');
+var localKey = 'app3.active';
+var active = localStorage.getItem(localKey) === 'yes';
+$square.toggleClass('active', active);
 $square.on('click', function () {
-  $square.toggleClass('active');
+  if ($square.hasClass('active')) {
+    $square.removeClass('active');
+    localStorage.setItem(localKey, 'no');
+  } else {
+    $square.addClass('active');
+    localStorage.setItem(localKey, 'yes');
+  }
 });
 },{"jquery":"juYr","./app3.css":"AQoi"}],"eWpN":[function(require,module,exports) {
 "use strict";
@@ -11286,6 +11407,8 @@ var _jquery = _interopRequireDefault(require("jquery"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+var html = "\n<section id=\"app4\">\n        <div class=\"circle\"></div>\n    </section>\n";
+var $element = (0, _jquery.default)(html).appendTo((0, _jquery.default)('body>.page'));
 var $circle = (0, _jquery.default)('#app4 .circle');
 $circle.on('mouseenter', function () {
   $circle.addClass('active');
@@ -11299,12 +11422,18 @@ require("./reset.css");
 
 require("./global.css");
 
-require("./app1.js");
+var _app = _interopRequireDefault(require("./app1.js"));
 
-require("./app2.js");
+var _app2 = _interopRequireDefault(require("./app2.js"));
 
 require("./app3.js");
 
 require("./app4.js");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+_app.default.init('#app1');
+
+_app2.default.init('#app2');
 },{"./reset.css":"AQoi","./global.css":"AQoi","./app1.js":"US5u","./app2.js":"vZ5o","./app3.js":"y8lT","./app4.js":"eWpN"}]},{},["epB2"], null)
-//# sourceMappingURL=main.2e62900d.js.map
+//# sourceMappingURL=main.49ace667.js.map
