@@ -11224,7 +11224,7 @@ var eventBus = (0, _jquery.default)(window); // 数据相关放到m
 var m = {
   // 初始化数据
   data: {
-    n: parseInt(localStorage.getItem("n"))
+    n: parseInt(localStorage.getItem("n")) || 100
   },
   create: function create() {},
   delete: function _delete() {},
@@ -11436,4 +11436,4 @@ _app.default.init('#app1');
 
 _app2.default.init('#app2');
 },{"./reset.css":"AQoi","./global.css":"AQoi","./app1.js":"US5u","./app2.js":"vZ5o","./app3.js":"y8lT","./app4.js":"eWpN"}]},{},["epB2"], null)
-//# sourceMappingURL=main.49ace667.js.map
+//# sourceMappingURL=main.9088766e.js.map
